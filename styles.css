@@ -5445,3 +5445,416 @@ body.light-mode .menu-card:nth-child(4n+4) i { animation-delay: -4.2s, -3.15s; }
         animation: none !important;
     }
 }
+/* ============================================================
+   PANAFEST 2027 — MOBILE POLISH PACK v5
+   (1) Generous spacing between modules
+   (2) Premium background image behind the module grid
+   Mobile-only (≤768px). Desktop untouched.
+   ============================================================ */
+
+@media (max-width: 768px) {
+    /* ---------- The card the modules sit on — now has imagery ---------- */
+    #menuPage.menu-page {
+        --pf-menu-bg: url('banner2.jpg');   /* swap for banner1/banner3 as desired */
+        position: relative;
+        margin: 12px 0 18px;
+        padding: 18px 14px 24px;
+        border-radius: 24px;
+        overflow: hidden;
+        background:
+            /* top-to-bottom darkening gradient — guarantees text contrast */
+            linear-gradient(180deg,
+                rgba(10, 10, 15, 0.72) 0%,
+                rgba(10, 10, 15, 0.86) 55%,
+                rgba(10, 10, 15, 0.92) 100%),
+            /* warm gold ambient glow at top-left */
+            radial-gradient(ellipse at 15% 0%,
+                rgba(255, 215, 0, 0.20), transparent 55%),
+            /* cool purple ambient glow at bottom-right */
+            radial-gradient(ellipse at 85% 100%,
+                rgba(185, 107, 255, 0.14), transparent 55%),
+            /* the actual photographic background */
+            var(--pf-menu-bg) center / cover no-repeat;
+        border: 1px solid rgba(255, 215, 0, 0.20);
+        box-shadow:
+            0 20px 50px rgba(0, 0, 0, 0.55),
+            0 6px 20px rgba(255, 215, 0, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.10);
+    }
+
+    /* Subtle vignette adds depth to the background image */
+    #menuPage.menu-page::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at center,
+            transparent 40%, rgba(0, 0, 0, 0.40) 100%);
+        pointer-events: none;
+        z-index: 0;
+        border-radius: inherit;
+    }
+
+    /* Grid sits above vignette */
+    #menuPage.menu-page > .menu-grid {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ---------- Generous spacing between module tiles ---------- */
+    .menu-grid {
+        gap: 16px;
+    }
+}
+
+/* ---------- Small phones — a touch tighter but still breathable ---------- */
+@media (max-width: 480px) {
+    #menuPage.menu-page {
+        margin: 10px 0 16px;
+        padding: 16px 10px 22px;
+        border-radius: 20px;
+    }
+    .menu-grid {
+        gap: 13px;
+    }
+}
+
+/* ---------- Light-mode parallel — same idea, softer overlay ---------- */
+@media (max-width: 768px) {
+    body.light-mode #menuPage.menu-page {
+        background:
+            linear-gradient(180deg,
+                rgba(250, 245, 232, 0.86) 0%,
+                rgba(245, 240, 228, 0.92) 55%,
+                rgba(240, 235, 224, 0.94) 100%),
+            radial-gradient(ellipse at 15% 0%,
+                rgba(255, 215, 0, 0.28), transparent 55%),
+            radial-gradient(ellipse at 85% 100%,
+                rgba(138, 101, 16, 0.14), transparent 55%),
+            var(--pf-menu-bg) center / cover no-repeat;
+        border-color: rgba(138, 101, 16, 0.22);
+        box-shadow:
+            0 20px 50px rgba(0, 0, 0, 0.15),
+            0 6px 20px rgba(138, 101, 16, 0.10),
+            inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    }
+    body.light-mode #menuPage.menu-page::before {
+        background: radial-gradient(ellipse at center,
+            transparent 40%, rgba(0, 0, 0, 0.10) 100%);
+    }
+}
+
+/* ============================================================
+   PANAFEST 2027 — CUSTOMER INTERFACE ENHANCEMENT PACK v6
+   ------------------------------------------------------------------
+   Appended enhancement layer. Adds 4 fixes ONLY:
+     1. Mobile sliding banner background for module card
+     2. Bright module button text (dark + light mode)
+     3. Stronger/more realistic 3D in light mode
+     4. (Sound fix is JS-only — see script.js appended section)
+
+   Does NOT modify, override existing rules except where new rules
+   explicitly target the same selectors AFTER the original definitions
+   (cascade order applies — appended rules win).
+   ============================================================ */
+
+/* ============================================================
+   FIX 1 — MOBILE SLIDING BANNER BACKGROUND FOR MODULE CARD
+   The #menuPage gets a slide-stack underlay with 3 banners
+   crossfading every ~5s. Modules stay on top (unaffected).
+   ============================================================ */
+@media (max-width: 768px) {
+    /* Establish stacking context so z-index layers are scoped */
+    #menuPage.menu-page {
+        isolation: isolate;
+    }
+
+    /* Slide-stack container — sits below ::before and .menu-grid */
+    #menuPage.menu-page .pf-menu-slides-bg {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        border-radius: inherit;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    #menuPage.menu-page .pf-menu-slide {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+        opacity: 0;
+        transition: opacity 1.8s ease-in-out;
+        will-change: opacity;
+    }
+
+    #menuPage.menu-page .pf-menu-slide.pf-active {
+        opacity: 1;
+    }
+
+    /* Dark overlay inside slide-stack — preserves text contrast */
+    #menuPage.menu-page .pf-menu-slides-bg::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            180deg,
+            rgba(10, 10, 15, 0.58) 0%,
+            rgba(10, 10, 15, 0.82) 55%,
+            rgba(10, 10, 15, 0.90) 100%
+        );
+        z-index: 2;
+        pointer-events: none;
+    }
+
+    /* Existing vignette pushed above slides */
+    #menuPage.menu-page::before {
+        z-index: 3 !important;
+    }
+
+    /* Modules stay on top — display, layout, tap, animation: untouched */
+    #menuPage.menu-page > .menu-grid {
+        z-index: 4 !important;
+        position: relative;
+    }
+
+    /* Light-mode parallel overlay — softer wash */
+    body.light-mode #menuPage.menu-page .pf-menu-slides-bg::after {
+        background: linear-gradient(
+            180deg,
+            rgba(250, 245, 232, 0.55) 0%,
+            rgba(245, 240, 228, 0.76) 55%,
+            rgba(240, 235, 224, 0.86) 100%
+        );
+    }
+}
+
+/* Hide the mobile slide-stack on desktop (never initialized there anyway) */
+@media (min-width: 769px) {
+    #menuPage.menu-page .pf-menu-slides-bg {
+        display: none;
+    }
+}
+
+/* ============================================================
+   FIX 2 — BRIGHT MODULE BUTTON TEXT (DARK + LIGHT MODE)
+   The h3 title uses pure white with a strong dark halo (AAA+).
+   The description uses a warm light tone. Both modes boosted.
+   ============================================================ */
+
+/* --- DARK MODE --- */
+body:not(.light-mode) .menu-card h3 {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    text-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.95),
+        0 1px 3px rgba(0, 0, 0, 0.85),
+        0 0 22px rgba(0, 0, 0, 0.65);
+}
+body:not(.light-mode) .menu-card p {
+    color: #ececf4 !important;
+    -webkit-text-fill-color: #ececf4;
+    font-weight: 600;
+    text-shadow:
+        0 1px 4px rgba(0, 0, 0, 0.90),
+        0 1px 2px rgba(0, 0, 0, 0.80);
+}
+body:not(.light-mode) .menu-card .pf-module-badge {
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+/* --- LIGHT MODE --- */
+body.light-mode .menu-card h3 {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    text-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.95),
+        0 1px 2px rgba(255, 255, 255, 0.7),
+        0 2px 6px rgba(0, 0, 0, 0.10);
+}
+body.light-mode .menu-card p {
+    color: #1a1a2e !important;
+    -webkit-text-fill-color: #1a1a2e;
+    font-weight: 700;
+    text-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.85),
+        0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* Slightly bigger + tighter text-shadow for all breakpoints */
+@media (max-width: 768px) {
+    .menu-card h3 {
+        text-shadow:
+            0 1px 4px rgba(0, 0, 0, 0.95),
+            0 1px 2px rgba(0, 0, 0, 0.90) !important;
+    }
+    .menu-card p {
+        text-shadow:
+            0 1px 3px rgba(0, 0, 0, 0.95),
+            0 1px 1.5px rgba(0, 0, 0, 0.85) !important;
+    }
+    body.light-mode .menu-card h3 {
+        text-shadow:
+            0 1px 0 rgba(255, 255, 255, 1),
+            0 1px 2px rgba(0, 0, 0, 0.12) !important;
+    }
+    body.light-mode .menu-card p {
+        text-shadow:
+            0 1px 0 rgba(255, 255, 255, 1),
+            0 1px 1.5px rgba(0, 0, 0, 0.10) !important;
+    }
+}
+
+/* ============================================================
+   FIX 3 — STRONGER / MORE REALISTIC 3D IN LIGHT MODE
+   White surfaces flatten shadows. We push contrast:
+   • Larger cast offsets + higher alphas
+   • Deeper inner bevel (bottom edge darker, top edge whiter)
+   • Stronger hover bloom
+   • More pronounced module-accent inner tint
+   The geometry logic is identical to dark mode — only alphas
+   and offsets are amplified so the depth is clearly perceptible.
+   ============================================================ */
+
+body.light-mode .menu-card {
+    /* Deep, layered outer cast — lifted well off the surface */
+    box-shadow:
+        0 26px 52px rgba(0, 0, 0, 0.30),
+        0 16px 32px rgba(0, 0, 0, 0.22),
+        0 8px 16px rgba(0, 0, 0, 0.15),
+        0 3px 6px rgba(0, 0, 0, 0.10),
+        /* Top bevel — bright hard highlight (white surface needs strong) */
+        inset 0 2px 0 rgba(255, 255, 255, 1),
+        inset 0 3px 6px rgba(255, 255, 255, 0.85),
+        inset 0 4px 10px rgba(var(--module-accent-rgb), 0.22),
+        /* Bottom bevel — dark hard edge + inner depth */
+        inset 0 -2px 0 rgba(0, 0, 0, 0.35),
+        inset 0 -5px 16px rgba(0, 0, 0, 0.18),
+        inset 0 -3px 8px rgba(0, 0, 0, 0.12),
+        /* Side hints */
+        inset 2px 0 3px rgba(255, 255, 255, 0.7),
+        inset -2px 0 3px rgba(0, 0, 0, 0.14);
+    background:
+        radial-gradient(ellipse 80% 60% at 50% 0%,
+            rgba(var(--module-accent-rgb), 0.14), transparent 70%),
+        linear-gradient(155deg,
+            #ffffff 0%,
+            #fbf9f3 40%,
+            #f0ebe0 85%,
+            #e8e1d2 100%);
+    border-color: rgba(var(--module-accent-rgb), 0.42);
+}
+
+body.light-mode .menu-card:hover {
+    box-shadow:
+        /* Very lifted */
+        0 38px 76px rgba(0, 0, 0, 0.36),
+        0 22px 44px rgba(0, 0, 0, 0.26),
+        0 10px 20px rgba(0, 0, 0, 0.18),
+        /* Accent bloom — glowing */
+        0 50px 100px rgba(var(--module-accent-rgb), 0.45),
+        0 0 130px rgba(var(--module-accent-rgb), 0.22),
+        /* Bevel brightened */
+        inset 0 2px 0 rgba(255, 255, 255, 1),
+        inset 0 3px 8px rgba(255, 255, 255, 0.95),
+        inset 0 5px 14px rgba(var(--module-accent-rgb), 0.36),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.30),
+        inset 0 -5px 16px rgba(0, 0, 0, 0.16),
+        inset 2px 0 4px rgba(255, 255, 255, 0.85),
+        inset -2px 0 4px rgba(0, 0, 0, 0.12);
+    border-color: var(--module-accent);
+    background:
+        radial-gradient(ellipse 80% 60% at 50% 0%,
+            rgba(var(--module-accent-rgb), 0.28), transparent 70%),
+        linear-gradient(155deg,
+            #ffffff 0%,
+            #fdfbf6 40%,
+            #f5f0e5 85%,
+            #ece5d3 100%);
+}
+
+body.light-mode .menu-card:active {
+    /* Full bevel inversion — bottom bright, top dark */
+    box-shadow:
+        0 3px 6px rgba(0, 0, 0, 0.16),
+        0 1px 3px rgba(0, 0, 0, 0.12),
+        inset 0 -2px 0 rgba(255, 255, 255, 0.98),
+        inset 0 -3px 6px rgba(var(--module-accent-rgb), 0.35),
+        inset 0 2px 0 rgba(0, 0, 0, 0.35),
+        inset 0 6px 18px rgba(0, 0, 0, 0.32),
+        inset 0 3px 10px rgba(0, 0, 0, 0.22),
+        inset 2px 0 3px rgba(0, 0, 0, 0.18),
+        inset -2px 0 3px rgba(255, 255, 255, 0.35);
+}
+
+/* Light-mode icon depth — stronger shadow beneath the icon */
+body.light-mode .menu-card i {
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.22))
+            drop-shadow(0 1px 2px rgba(0, 0, 0, 0.16));
+}
+
+/* Light-mode refraction ridge — more contrast */
+body.light-mode .menu-card::after {
+    background: linear-gradient(
+        90deg,
+        rgba(var(--module-accent-rgb), 0.00) 0%,
+        rgba(var(--module-accent-rgb), 0.55) 8%,
+        rgba(255, 255, 255, 1.00) 25%,
+        rgba(255, 255, 255, 1.00) 50%,
+        rgba(255, 255, 255, 1.00) 75%,
+        rgba(var(--module-accent-rgb), 0.55) 92%,
+        rgba(var(--module-accent-rgb), 0.00) 100%
+    );
+    height: 1.8px;
+    opacity: 1;
+}
+
+/* Light-mode mobile — still stronger than default but perf-safe */
+@media (max-width: 768px) {
+    body.light-mode .menu-card {
+        box-shadow:
+            0 14px 28px rgba(0, 0, 0, 0.24),
+            0 8px 16px rgba(0, 0, 0, 0.16),
+            0 3px 6px rgba(0, 0, 0, 0.10),
+            inset 0 1.5px 0 rgba(255, 255, 255, 1),
+            inset 0 2px 4px rgba(255, 255, 255, 0.85),
+            inset 0 3px 8px rgba(var(--module-accent-rgb), 0.22),
+            inset 0 -1.5px 0 rgba(0, 0, 0, 0.28),
+            inset 0 -4px 10px rgba(0, 0, 0, 0.14);
+    }
+    body.light-mode .menu-card:hover {
+        box-shadow:
+            0 20px 40px rgba(0, 0, 0, 0.28),
+            0 12px 24px rgba(0, 0, 0, 0.20),
+            0 26px 52px rgba(var(--module-accent-rgb), 0.35),
+            inset 0 1.5px 0 rgba(255, 255, 255, 1),
+            inset 0 2px 6px rgba(255, 255, 255, 0.90),
+            inset 0 4px 10px rgba(var(--module-accent-rgb), 0.32),
+            inset 0 -1.5px 0 rgba(0, 0, 0, 0.24),
+            inset 0 -4px 10px rgba(0, 0, 0, 0.12);
+    }
+    body.light-mode .menu-card:active {
+        box-shadow:
+            0 3px 6px rgba(0, 0, 0, 0.14),
+            0 1px 2px rgba(0, 0, 0, 0.10),
+            inset 0 -1.5px 0 rgba(255, 255, 255, 0.95),
+            inset 0 2px 0 rgba(0, 0, 0, 0.30),
+            inset 0 5px 14px rgba(0, 0, 0, 0.26),
+            inset 0 2px 6px rgba(0, 0, 0, 0.18);
+    }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    #menuPage.menu-page .pf-menu-slide {
+        transition: none !important;
+    }
+}
+
+/* ---------- Safety net — if the banner image fails to load, the
+   layered gradients still give a premium backdrop. Nothing breaks. ---------- */
