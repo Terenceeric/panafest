@@ -4176,3 +4176,1272 @@ body.light-mode .footer-note {
     border-top-color: rgba(0,0,0,0.10);
     opacity: 0.9;
 }
+
+/* ============================================================
+   PANAFEST 2027 — PREMIUM 3D EMBOSSED MODULE CARDS
+   (NEW APPENDED LAYER — customer homepage module tiles)
+   Adds realistic depth, layered shadows, hover lift, press-down
+   micro-interaction, edge reflections, icon glow, and full light-
+   mode parity. Does not modify any existing rules — overrides only.
+   ============================================================ */
+
+/* ---- Base: raised embossed card (dark theme) ---- */
+.menu-card {
+    background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255, 215, 0, 0.06), transparent 70%),
+        linear-gradient(155deg,
+            rgba(38, 38, 52, 0.96) 0%,
+            rgba(24, 24, 34, 0.94) 45%,
+            rgba(14, 14, 22, 0.92) 100%);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 215, 0, 0.22);
+    border-radius: 20px;
+    transform: translateY(0) scale(1);
+    transition:
+        transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1),
+        box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 0.3s ease,
+        background 0.4s ease;
+    box-shadow:
+        /* outer cast shadow — layered for depth */
+        0 14px 28px rgba(0, 0, 0, 0.55),
+        0 8px 16px rgba(0, 0, 0, 0.45),
+        0 3px 6px rgba(0, 0, 0, 0.35),
+        /* top inner highlight (simulated light from above) */
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.14),
+        inset 0 1px 2px rgba(255, 215, 0, 0.18),
+        /* bottom inner emboss */
+        inset 0 -3px 10px rgba(0, 0, 0, 0.55),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.7);
+    position: relative;
+    will-change: transform, box-shadow;
+    isolation: isolate;
+}
+
+/* ---- Edge ridge reflection (subtle glossy top strip) ---- */
+.menu-card::after {
+    content: '';
+    position: absolute;
+    top: 1px;
+    left: 8%;
+    right: 8%;
+    height: 1.5px;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 215, 0, 0.5) 20%,
+        rgba(255, 255, 255, 0.75) 50%,
+        rgba(255, 215, 0, 0.5) 80%,
+        transparent);
+    border-radius: 50px;
+    pointer-events: none;
+    opacity: 0.85;
+    transition: opacity 0.35s ease;
+    z-index: 1;
+}
+
+/* Keep the original shine-sweep beneath new layers */
+.menu-card::before {
+    z-index: 0;
+    opacity: 0.9;
+}
+
+/* ---- Icon & text — readable over the embossed gradient ---- */
+.menu-card i {
+    position: relative;
+    z-index: 2;
+    color: var(--gold-primary);
+    text-shadow:
+        0 0 24px rgba(255, 215, 0, 0.5),
+        0 0 8px rgba(255, 215, 0, 0.35),
+        0 2px 3px rgba(0, 0, 0, 0.7);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+    transition:
+        transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1),
+        text-shadow 0.35s ease;
+}
+.menu-card h3 {
+    position: relative;
+    z-index: 2;
+    color: #f5f5f0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
+    letter-spacing: 0.3px;
+}
+.menu-card p {
+    position: relative;
+    z-index: 2;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+/* ---- Hover: card lifts, glows warmer, casts deeper shadow ---- */
+.menu-card:hover {
+    transform: translateY(-10px) scale(1.025);
+    border-color: rgba(255, 215, 0, 0.65);
+    background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255, 215, 0, 0.12), transparent 70%),
+        linear-gradient(155deg,
+            rgba(46, 46, 62, 0.98) 0%,
+            rgba(28, 28, 40, 0.96) 45%,
+            rgba(18, 18, 26, 0.94) 100%);
+    box-shadow:
+        /* lifted cast shadow — deeper + warmer */
+        0 24px 48px rgba(0, 0, 0, 0.65),
+        0 14px 28px rgba(0, 0, 0, 0.55),
+        0 40px 80px rgba(255, 215, 0, 0.18),
+        /* bright top highlight */
+        inset 0 2px 2px rgba(255, 255, 255, 0.22),
+        inset 0 1px 2px rgba(255, 215, 0, 0.3),
+        /* subtle inner emboss */
+        inset 0 -3px 10px rgba(0, 0, 0, 0.45);
+}
+.menu-card:hover::after { opacity: 1; }
+.menu-card:hover i {
+    transform: scale(1.18) rotate(-4deg);
+    text-shadow:
+        0 0 32px rgba(255, 215, 0, 0.75),
+        0 0 12px rgba(255, 215, 0, 0.5),
+        0 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+/* ---- Pressed/tapped: card depresses inward like a physical button ---- */
+.menu-card:active {
+    transform: translateY(-1px) scale(0.975);
+    transition:
+        transform 0.12s cubic-bezier(0.4, 0, 0.6, 1),
+        box-shadow 0.12s cubic-bezier(0.4, 0, 0.6, 1);
+    box-shadow:
+        /* flush with surface — cast collapses */
+        0 3px 8px rgba(0, 0, 0, 0.6),
+        0 1px 3px rgba(0, 0, 0, 0.5),
+        /* strong inner shadow — pressed in */
+        inset 0 4px 10px rgba(0, 0, 0, 0.75),
+        inset 0 2px 4px rgba(0, 0, 0, 0.65),
+        inset 0 -1px 2px rgba(255, 215, 0, 0.15);
+}
+.menu-card:active::after {
+    opacity: 0.35;
+    top: 0.5px;
+}
+
+/* ---- Accessibility: focus ring ---- */
+.menu-card:focus-visible {
+    outline: 2px solid var(--gold-primary);
+    outline-offset: 4px;
+}
+
+/* ---- iOS notification badge sits above the new reflection ---- */
+.menu-card .pf-module-badge { z-index: 11; }
+
+/* ============================================================
+   LIGHT MODE PARALLEL — soft neumorphic shadows
+   ============================================================ */
+body.light-mode .menu-card {
+    background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255, 215, 0, 0.18), transparent 70%),
+        linear-gradient(155deg,
+            #ffffff 0%,
+            #faf8f2 45%,
+            #f0ece2 100%);
+    border-color: rgba(138, 101, 16, 0.28);
+    box-shadow:
+        0 14px 28px rgba(0, 0, 0, 0.15),
+        0 8px 16px rgba(0, 0, 0, 0.10),
+        0 3px 6px rgba(0, 0, 0, 0.06),
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.95),
+        inset 0 1px 2px rgba(255, 255, 255, 0.8),
+        inset 0 -3px 10px rgba(0, 0, 0, 0.10),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.08);
+}
+body.light-mode .menu-card::after {
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 1) 20%,
+        rgba(255, 215, 0, 0.7) 50%,
+        rgba(255, 255, 255, 1) 80%,
+        transparent);
+    opacity: 0.9;
+}
+body.light-mode .menu-card i {
+    color: #8a6510;
+    text-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.15),
+        0 0 16px rgba(255, 215, 0, 0.4);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+}
+body.light-mode .menu-card h3 {
+    color: #0f0f0f;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.7);
+}
+body.light-mode .menu-card p {
+    color: #4a4a5a;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+body.light-mode .menu-card:hover {
+    transform: translateY(-10px) scale(1.025);
+    border-color: #8a6510;
+    background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255, 215, 0, 0.28), transparent 70%),
+        linear-gradient(155deg,
+            #ffffff 0%,
+            #fdfbf6 45%,
+            #f5f1e8 100%);
+    box-shadow:
+        0 24px 48px rgba(0, 0, 0, 0.18),
+        0 14px 28px rgba(138, 101, 16, 0.15),
+        0 40px 80px rgba(255, 215, 0, 0.22),
+        inset 0 2px 2px rgba(255, 255, 255, 1),
+        inset 0 1px 2px rgba(255, 215, 0, 0.3),
+        inset 0 -3px 10px rgba(0, 0, 0, 0.08);
+}
+body.light-mode .menu-card:active {
+    transform: translateY(-1px) scale(0.975);
+    box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.15),
+        0 1px 3px rgba(0, 0, 0, 0.10),
+        inset 0 4px 10px rgba(0, 0, 0, 0.18),
+        inset 0 2px 4px rgba(0, 0, 0, 0.12),
+        inset 0 -1px 2px rgba(255, 215, 0, 0.15);
+}
+
+/* ============================================================
+   MOBILE — scaled shadows + tap-optimised
+   ============================================================ */
+@media (max-width: 768px) {
+    .menu-card {
+        box-shadow:
+            0 8px 18px rgba(0, 0, 0, 0.55),
+            0 4px 10px rgba(0, 0, 0, 0.45),
+            0 2px 4px rgba(0, 0, 0, 0.35),
+            inset 0 1px 1px rgba(255, 255, 255, 0.14),
+            inset 0 1px 1px rgba(255, 215, 0, 0.18),
+            inset 0 -2px 6px rgba(0, 0, 0, 0.5),
+            inset 0 -1px 1px rgba(0, 0, 0, 0.65);
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+    .menu-card:hover {
+        transform: translateY(-4px) scale(1.015);
+        box-shadow:
+            0 14px 26px rgba(0, 0, 0, 0.6),
+            0 8px 16px rgba(0, 0, 0, 0.5),
+            0 20px 40px rgba(255, 215, 0, 0.18),
+            inset 0 1.5px 1.5px rgba(255, 255, 255, 0.2),
+            inset 0 1px 1px rgba(255, 215, 0, 0.28),
+            inset 0 -2px 6px rgba(0, 0, 0, 0.45);
+    }
+    .menu-card:active {
+        transform: translateY(1px) scale(0.96);
+        box-shadow:
+            0 2px 4px rgba(0, 0, 0, 0.5),
+            inset 0 3px 8px rgba(0, 0, 0, 0.75),
+            inset 0 1px 2px rgba(0, 0, 0, 0.6);
+    }
+    .menu-card i {
+        text-shadow:
+            0 0 14px rgba(255, 215, 0, 0.4),
+            0 1px 2px rgba(0, 0, 0, 0.7);
+    }
+    .menu-card h3 {
+        text-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.7);
+    }
+    body.light-mode .menu-card {
+        box-shadow:
+            0 8px 18px rgba(0, 0, 0, 0.12),
+            0 4px 10px rgba(0, 0, 0, 0.08),
+            0 2px 4px rgba(0, 0, 0, 0.05),
+            inset 0 1px 1px rgba(255, 255, 255, 1),
+            inset 0 -2px 6px rgba(0, 0, 0, 0.08);
+    }
+    body.light-mode .menu-card:active {
+        box-shadow:
+            0 2px 4px rgba(0, 0, 0, 0.12),
+            inset 0 3px 8px rgba(0, 0, 0, 0.18),
+            inset 0 1px 2px rgba(0, 0, 0, 0.10);
+    }
+}
+
+/* ============================================================
+   TACTILE COMPANION BUTTONS (.auth-btn, .back-to-menu-btn)
+   ============================================================ */
+.auth-btn {
+    position: relative;
+    box-shadow:
+        0 6px 14px rgba(0, 0, 0, 0.4),
+        0 3px 6px rgba(0, 0, 0, 0.3),
+        inset 0 1.5px 1.5px rgba(255, 255, 255, 0.45),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+    transition:
+        transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1),
+        box-shadow 0.25s ease;
+    overflow: hidden;
+}
+.auth-btn::after {
+    content: '';
+    position: absolute;
+    top: 1px;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+    pointer-events: none;
+}
+.auth-btn:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 12px 24px rgba(255, 215, 0, 0.35),
+        0 6px 12px rgba(0, 0, 0, 0.35),
+        inset 0 1.5px 1.5px rgba(255, 255, 255, 0.6),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.25);
+}
+.auth-btn:active {
+    transform: translateY(1px) scale(0.98);
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.4),
+        inset 0 3px 6px rgba(0, 0, 0, 0.35),
+        inset 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.back-to-menu-btn {
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.3),
+        inset 0 1px 1px rgba(255, 255, 255, 0.1),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.3);
+    transition: all 0.25s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+.back-to-menu-btn:active {
+    transform: translateX(-2px) scale(0.97);
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.4),
+        inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================================
+   REDUCED MOTION — respect user preference
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+    .menu-card,
+    .menu-card::after,
+    .auth-btn,
+    .back-to-menu-btn {
+        transition: none !important;
+    }
+    .menu-card:hover,
+    .menu-card:active {
+        transform: none !important;
+    }
+}
+/* ============================================================
+   PANAFEST 2027 — MODULE CARD ENHANCEMENT LAYER v2 (ULTRA)
+   Appended on top of the v1 premium 3D embossed layer.
+   Adds: 3D cursor-tracked tilt, gold spotlight, icon micro-float,
+   text parallax, deeper ambient halo, badge pulse, haptic hook,
+   and spring-tuned press. Only overrides transform/transition/
+   animation composition — leaves v1 shadows intact.
+   Safe to remove at any time; no side-effects.
+   ============================================================ */
+
+/* --- 3D perspective context for the module grid --- */
+.menu-grid {
+    perspective: 1400px;
+    perspective-origin: 50% 50%;
+}
+
+/* --- Base card: transform driven by CSS vars (JS sets --rx,
+       --ry, --ty, --sc, --mx, --my). Fallbacks ensure the card
+       works perfectly even before JS runs or if JS is removed. --- */
+.menu-card {
+    transform-style: preserve-3d;
+    transform:
+        rotateX(var(--rx, 0deg))
+        rotateY(var(--ry, 0deg))
+        translateY(var(--ty, 0px))
+        scale(var(--sc, 1));
+    transition:
+        transform 0.22s cubic-bezier(0.25, 0.9, 0.35, 1.05),
+        box-shadow 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 0.3s ease,
+        background 0.4s ease;
+}
+
+/* --- Cursor-following gold spotlight (replaces the old static
+       shine sweep; still uses ::before so no extra markup needed) --- */
+.menu-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        400px circle at var(--mx, 50%) var(--my, 50%),
+        rgba(255, 215, 0, 0.22) 0%,
+        rgba(255, 215, 0, 0.08) 30%,
+        transparent 65%
+    );
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    border-radius: inherit;
+    z-index: 1;
+}
+.menu-card:hover::before { opacity: 1; }
+
+/* --- Icon micro-float (idle) — uses `translate` so it never
+       conflicts with the hover `transform: scale() rotate()` --- */
+@keyframes pfCardIconFloat {
+    0%, 100% { translate: 0 0; }
+    50%      { translate: 0 -3px; }
+}
+.menu-card i {
+    translate: 0 0;
+    animation: pfCardIconFloat 5.5s ease-in-out infinite;
+}
+.menu-card:nth-child(3n+1) i { animation-delay: 0s; }
+.menu-card:nth-child(3n+2) i { animation-delay: -1.8s; }
+.menu-card:nth-child(3n+3) i { animation-delay: -3.6s; }
+
+/* --- Text micro-parallax on hover (adds layered depth) --- */
+.menu-card h3,
+.menu-card p {
+    transition: transform 0.3s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+.menu-card:hover h3 { transform: translateY(-2px); }
+.menu-card:hover p  { transform: translateY(-1px); opacity: 0.95; }
+
+/* --- Hover: brighter border, deeper ambient halo (v1 shadows
+       preserved and augmented with an outer 100px gold bloom) --- */
+.menu-card:hover {
+    border-color: rgba(255, 215, 0, 0.72);
+    box-shadow:
+        0 24px 48px rgba(0, 0, 0, 0.65),
+        0 14px 28px rgba(0, 0, 0, 0.55),
+        0 40px 80px rgba(255, 215, 0, 0.22),
+        0 0 100px rgba(255, 215, 0, 0.10),
+        inset 0 2px 2px rgba(255, 255, 255, 0.24),
+        inset 0 1px 2px rgba(255, 215, 0, 0.34),
+        inset 0 -3px 10px rgba(0, 0, 0, 0.45);
+}
+
+/* --- Press: fully flush to the surface; deep inner "pressed in"
+       emboss retained from v1 (strengthened) --- */
+.menu-card:active {
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.65),
+        0 1px 2px rgba(0, 0, 0, 0.55),
+        inset 0 6px 14px rgba(0, 0, 0, 0.80),
+        inset 0 3px 6px rgba(0, 0, 0, 0.70),
+        inset 0 -1px 2px rgba(255, 215, 0, 0.20);
+}
+
+/* --- Notification badge — breathing red glow --- */
+@keyframes pfBadgeGlow {
+    0%, 100% {
+        box-shadow:
+            0 2px 8px rgba(255, 59, 48, 0.55),
+            0 0 0 2px rgba(20, 20, 28, 0.85),
+            0 0 12px rgba(255, 59, 48, 0.40);
+    }
+    50% {
+        box-shadow:
+            0 2px 8px rgba(255, 59, 48, 0.75),
+            0 0 0 2px rgba(20, 20, 28, 0.85),
+            0 0 22px rgba(255, 59, 48, 0.70);
+    }
+}
+.menu-card .pf-module-badge.pf-badge-visible {
+    animation: pfBadgeGlow 2.4s ease-in-out infinite;
+}
+
+/* ============================================================
+   LIGHT MODE PARALLEL
+   ============================================================ */
+body.light-mode .menu-card::before {
+    background: radial-gradient(
+        400px circle at var(--mx, 50%) var(--my, 50%),
+        rgba(255, 215, 0, 0.40) 0%,
+        rgba(255, 215, 0, 0.15) 30%,
+        transparent 65%
+    );
+}
+body.light-mode .menu-card:hover {
+    border-color: #8a6510;
+    box-shadow:
+        0 24px 48px rgba(0, 0, 0, 0.18),
+        0 14px 28px rgba(138, 101, 16, 0.18),
+        0 40px 80px rgba(255, 215, 0, 0.28),
+        0 0 100px rgba(255, 215, 0, 0.15),
+        inset 0 2px 2px rgba(255, 255, 255, 1),
+        inset 0 1px 2px rgba(255, 215, 0, 0.34),
+        inset 0 -3px 10px rgba(0, 0, 0, 0.08);
+}
+body.light-mode .menu-card:active {
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.18),
+        0 1px 2px rgba(0, 0, 0, 0.12),
+        inset 0 6px 14px rgba(0, 0, 0, 0.22),
+        inset 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+body.light-mode .menu-card .pf-module-badge.pf-badge-visible {
+    animation: none; /* keep badge crisp on white — solid red is enough */
+    box-shadow:
+        0 2px 8px rgba(255, 59, 48, 0.55),
+        0 0 0 2px #ffffff,
+        0 0 14px rgba(255, 59, 48, 0.45);
+}
+
+/* ============================================================
+   TOUCH DEVICES — no 3D tilt (JS guard skips touch), but keep
+   floating icons + a smaller press lift for good tap feedback.
+   ============================================================ */
+@media (hover: none) {
+    .menu-card {
+        transform: none;
+        transition: transform 0.15s ease, box-shadow 0.3s ease;
+    }
+    .menu-card:hover {
+        transform: translateY(-3px) scale(1.01);
+    }
+    .menu-card:active {
+        transform: scale(0.96);
+    }
+}
+
+/* ============================================================
+   ACCESSIBILITY — respect reduced-motion preference
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+    .menu-card,
+    .menu-card::before,
+    .menu-card i,
+    .menu-card h3,
+    .menu-card p,
+    .menu-card .pf-module-badge {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+        translate: none !important;
+    }
+}
+/* ============================================================
+   PANAFEST 2027 — MODULE CARD BEVEL & LIGHT-INVERSION LAYER v3
+   The final realism layer. Adds:
+     • True 4-sided directional bevel (hard top highlight,
+       hard bottom shadow, faint side hints)
+     • Physically INVERTED bevel on :active — top-shadow /
+       bottom-highlight — simulating a real pressed button
+     • Chromatic refraction ridge on the top edge
+     • Ambient breathing icon glow (firelight effect)
+     • Spring-timed press-in / snap-back
+   Only overrides box-shadow on .menu-card. transform / transition
+   from v2 remain untouched — cascade does this for free.
+   ============================================================ */
+
+/* ---------- RESTING — raised embossed with true bevel ---------- */
+.menu-card {
+    box-shadow:
+        /* ===== OUTER CAST — layered ambient + direct ===== */
+        0 18px 36px rgba(0, 0, 0, 0.60),
+        0 10px 20px rgba(0, 0, 0, 0.45),
+        0 4px 8px rgba(0, 0, 0, 0.35),
+        /* ===== TOP EDGE — hard bright line + soft glow ===== */
+        inset 0 1px 0 rgba(255, 255, 255, 0.58),
+        inset 0 2px 4px rgba(255, 255, 255, 0.16),
+        inset 0 3px 6px rgba(255, 215, 0, 0.12),
+        /* ===== BOTTOM EDGE — hard dark line + inner shadow ===== */
+        inset 0 -1px 0 rgba(0, 0, 0, 0.78),
+        inset 0 -4px 12px rgba(0, 0, 0, 0.55),
+        /* ===== SIDE EDGES — faint directional hint ===== */
+        inset 1px 0 2px rgba(255, 255, 255, 0.06),
+        inset -1px 0 2px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- HOVER — lifted, brighter bevel, gold bloom ---------- */
+.menu-card:hover {
+    box-shadow:
+        /* deeper cast — the card really is "floating" */
+        0 28px 56px rgba(0, 0, 0, 0.68),
+        0 16px 32px rgba(0, 0, 0, 0.55),
+        0 6px 12px rgba(0, 0, 0, 0.42),
+        /* gold ambient halo — light bouncing off nearby */
+        0 40px 90px rgba(255, 215, 0, 0.22),
+        0 0 100px rgba(255, 215, 0, 0.10),
+        /* bevel: brighter top line, softer glow, warmer */
+        inset 0 1px 0 rgba(255, 255, 255, 0.88),
+        inset 0 2px 5px rgba(255, 255, 255, 0.24),
+        inset 0 3px 8px rgba(255, 215, 0, 0.22),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.68),
+        inset 0 -4px 12px rgba(0, 0, 0, 0.45),
+        inset 1px 0 2px rgba(255, 255, 255, 0.08),
+        inset -1px 0 2px rgba(0, 0, 0, 0.30);
+}
+
+/* ---------- PRESSED — PHYSICAL BEVEL INVERSION ---------- */
+/* Top edge goes DARK (recessed), bottom edge goes BRIGHT (caught
+   by light). This is what a real push-button does. Combined with
+   the small scale-down from v2, the effect is a physical depress. */
+.menu-card:active {
+    box-shadow:
+        /* flush with surface — cast collapses to a hairline */
+        0 2px 4px rgba(0, 0, 0, 0.55),
+        0 1px 2px rgba(0, 0, 0, 0.45),
+        /* BOTTOM EDGE — NOW BRIGHT (was dark) */
+        inset 0 -1px 0 rgba(255, 255, 255, 0.38),
+        inset 0 -2px 3px rgba(255, 215, 0, 0.16),
+        /* TOP EDGE — NOW DARK (was bright) — being pressed in */
+        inset 0 1px 0 rgba(0, 0, 0, 0.88),
+        inset 0 4px 14px rgba(0, 0, 0, 0.72),
+        inset 0 2px 6px rgba(0, 0, 0, 0.65),
+        /* SIDE EDGES — inverted hint */
+        inset 1px 0 2px rgba(0, 0, 0, 0.40),
+        inset -1px 0 2px rgba(255, 255, 255, 0.06);
+    /* Snappy in — 0.1s. The transition back (in v2) is 0.22s
+       with an overshoot curve, giving the "spring release" feel. */
+    transition:
+        transform 0.1s cubic-bezier(0.4, 0, 0.6, 1),
+        box-shadow 0.1s cubic-bezier(0.4, 0, 0.6, 1),
+        border-color 0.1s ease;
+}
+
+/* ---------- Chromatic refraction ridge on top edge ---------- */
+/* Real glass dispenses light — cyan on one side, magenta on the
+   other, bright white in the middle. Very subtle 1.5px strip. */
+.menu-card::after {
+    background: linear-gradient(
+        90deg,
+        rgba(120, 200, 255, 0.00) 0%,
+        rgba(120, 200, 255, 0.38) 6%,
+        rgba(255, 255, 255, 0.78) 22%,
+        rgba(255, 255, 255, 0.98) 50%,
+        rgba(255, 230, 170, 0.78) 78%,
+        rgba(255, 120, 200, 0.38) 94%,
+        rgba(255, 120, 200, 0.00) 100%
+    );
+    height: 1.5px;
+    top: 0.5px;
+    opacity: 0.92;
+}
+.menu-card:hover::after {
+    opacity: 1;
+    height: 2px;
+}
+.menu-card:active::after {
+    /* Ridge disappears — pressed below the surface */
+    opacity: 0.25;
+    height: 1px;
+}
+
+/* ---------- Ambient breathing icon glow ("firelight") ---------- */
+/* The icon glow pulses on a slow cycle so the whole grid feels
+   lit by warm, living light. Uses text-shadow only — cheap. */
+@keyframes pfIconBreathe {
+    0%, 100% {
+        text-shadow:
+            0 0 22px rgba(255, 215, 0, 0.45),
+            0 0 8px rgba(255, 215, 0, 0.30),
+            0 2px 3px rgba(0, 0, 0, 0.70);
+    }
+    50% {
+        text-shadow:
+            0 0 32px rgba(255, 215, 0, 0.65),
+            0 0 12px rgba(255, 215, 0, 0.45),
+            0 2px 3px rgba(0, 0, 0, 0.70);
+    }
+}
+/* Combined with the v2 float animation — two independent anims */
+.menu-card i {
+    animation:
+        pfCardIconFloat 5.5s ease-in-out infinite,
+        pfIconBreathe 4.2s ease-in-out infinite;
+}
+.menu-card:nth-child(4n+1) i { animation-delay: 0s, 0s; }
+.menu-card:nth-child(4n+2) i { animation-delay: -1.4s, -1.05s; }
+.menu-card:nth-child(4n+3) i { animation-delay: -2.8s, -2.10s; }
+.menu-card:nth-child(4n+4) i { animation-delay: -4.2s, -3.15s; }
+
+/* ---------- Faster, snappier spring on release ---------- */
+/* v2 set 0.22s; tightening to a positive-overshoot curve on
+   release makes the card feel like it bounces back physically. */
+.menu-card {
+    transition:
+        transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 0.3s ease,
+        background 0.4s ease;
+}
+
+/* ============================================================
+   LIGHT MODE PARALLEL
+   White surface needs softer alphas — but the bevel logic
+   (top-bright / bottom-dark) stays identical.
+   ============================================================ */
+body.light-mode .menu-card {
+    box-shadow:
+        0 18px 36px rgba(0, 0, 0, 0.16),
+        0 10px 20px rgba(0, 0, 0, 0.10),
+        0 4px 8px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 1),
+        inset 0 2px 4px rgba(255, 255, 255, 0.55),
+        inset 0 3px 6px rgba(255, 215, 0, 0.16),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.22),
+        inset 0 -4px 12px rgba(0, 0, 0, 0.10),
+        inset 1px 0 2px rgba(255, 255, 255, 0.35),
+        inset -1px 0 2px rgba(0, 0, 0, 0.10);
+}
+body.light-mode .menu-card:hover {
+    box-shadow:
+        0 28px 56px rgba(0, 0, 0, 0.22),
+        0 16px 32px rgba(138, 101, 16, 0.14),
+        0 6px 12px rgba(0, 0, 0, 0.10),
+        0 40px 90px rgba(255, 215, 0, 0.26),
+        0 0 100px rgba(255, 215, 0, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 1),
+        inset 0 2px 5px rgba(255, 255, 255, 0.70),
+        inset 0 3px 8px rgba(255, 215, 0, 0.24),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+        inset 0 -4px 12px rgba(0, 0, 0, 0.10),
+        inset 1px 0 2px rgba(255, 255, 255, 0.40),
+        inset -1px 0 2px rgba(0, 0, 0, 0.08);
+}
+body.light-mode .menu-card:active {
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.14),
+        0 1px 2px rgba(0, 0, 0, 0.10),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.85),
+        inset 0 -2px 3px rgba(255, 215, 0, 0.20),
+        inset 0 1px 0 rgba(0, 0, 0, 0.26),
+        inset 0 4px 14px rgba(0, 0, 0, 0.22),
+        inset 0 2px 6px rgba(0, 0, 0, 0.16),
+        inset 1px 0 2px rgba(0, 0, 0, 0.10),
+        inset -1px 0 2px rgba(255, 255, 255, 0.30);
+}
+body.light-mode .menu-card::after {
+    background: linear-gradient(
+        90deg,
+        rgba(80, 160, 230, 0.00) 0%,
+        rgba(80, 160, 230, 0.30) 6%,
+        rgba(255, 255, 255, 1) 22%,
+        rgba(255, 235, 140, 0.95) 50%,
+        rgba(255, 255, 255, 1) 78%,
+        rgba(230, 100, 160, 0.30) 94%,
+        rgba(230, 100, 160, 0.00) 100%
+    );
+}
+body.light-mode .menu-card i {
+    animation:
+        pfCardIconFloat 5.5s ease-in-out infinite,
+        pfIconBreatheLight 4.2s ease-in-out infinite;
+}
+@keyframes pfIconBreatheLight {
+    0%, 100% {
+        text-shadow:
+            0 1px 2px rgba(0, 0, 0, 0.14),
+            0 0 14px rgba(255, 215, 0, 0.35);
+    }
+    50% {
+        text-shadow:
+            0 1px 2px rgba(0, 0, 0, 0.14),
+            0 0 22px rgba(255, 215, 0, 0.55);
+    }
+}
+
+/* ============================================================
+   MOBILE — lighter shadow composition, disable breathing glow
+   (mobile GPUs repaint cost is high — reduce shadow layers)
+   ============================================================ */
+@media (max-width: 768px) {
+    .menu-card {
+        box-shadow:
+            0 10px 20px rgba(0, 0, 0, 0.55),
+            0 4px 8px rgba(0, 0, 0, 0.45),
+            inset 0 1px 0 rgba(255, 255, 255, 0.55),
+            inset 0 2px 4px rgba(255, 215, 0, 0.14),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.78),
+            inset 0 -3px 8px rgba(0, 0, 0, 0.50);
+    }
+    .menu-card:hover {
+        box-shadow:
+            0 16px 30px rgba(0, 0, 0, 0.62),
+            0 20px 40px rgba(255, 215, 0, 0.20),
+            inset 0 1px 0 rgba(255, 255, 255, 0.78),
+            inset 0 2px 4px rgba(255, 215, 0, 0.22),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.65),
+            inset 0 -3px 8px rgba(0, 0, 0, 0.42);
+    }
+    .menu-card:active {
+        box-shadow:
+            0 2px 4px rgba(0, 0, 0, 0.50),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.35),
+            inset 0 1px 0 rgba(0, 0, 0, 0.85),
+            inset 0 4px 12px rgba(0, 0, 0, 0.70);
+    }
+    /* Disable breathing on mobile — saves paint cost */
+    .menu-card i {
+        animation: pfCardIconFloat 5.5s ease-in-out infinite;
+    }
+    body.light-mode .menu-card {
+        box-shadow:
+            0 10px 20px rgba(0, 0, 0, 0.14),
+            0 4px 8px rgba(0, 0, 0, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 1),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.20),
+            inset 0 -3px 8px rgba(0, 0, 0, 0.10);
+    }
+    body.light-mode .menu-card:active {
+        box-shadow:
+            0 2px 4px rgba(0, 0, 0, 0.10),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.85),
+            inset 0 1px 0 rgba(0, 0, 0, 0.24),
+            inset 0 4px 12px rgba(0, 0, 0, 0.22);
+    }
+}
+
+/* ============================================================
+   ACCESSIBILITY — full stop on reduced motion
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+    .menu-card,
+    .menu-card i,
+    .menu-card::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+/* ============================================================
+   PANAFEST 2027 — PER-MODULE COLOR THEMING (v4)
+   Gives every module card its own accent color that flows
+   through: icon → glow → border → bevel tint → spotlight →
+   refraction ridge → ambient halo.
+   Preserves 100% of v3 geometry, shadows, motion, and JS tilt.
+   Only modifies color values — depth and behaviour untouched.
+   ============================================================ */
+
+/* ---------- Default accent (used before per-module overrides) ---------- */
+.menu-card {
+    --module-accent: #FFD700;
+    --module-accent-rgb: 255, 215, 0;
+}
+
+/* ============================================================
+   DARK-MODE ACCENTS — one rule per color group
+   (grouped so identical colors share a single declaration)
+   ============================================================ */
+
+/* Gold — identity */
+.menu-card[data-module="myRegistrationModule"] {
+    --module-accent: #FFD700;
+    --module-accent-rgb: 255, 215, 0;
+}
+/* Sky blue — programs, user management */
+.menu-card[data-module="programsModule"],
+.menu-card[data-module="adminUsersModule"] {
+    --module-accent: #38BDF8;
+    --module-accent-rgb: 56, 189, 248;
+}
+/* Violet — schedule, programs admin */
+.menu-card[data-module="eventScheduleModule"],
+.menu-card[data-module="adminProgramsModule"] {
+    --module-accent: #A78BFA;
+    --module-accent-rgb: 167, 139, 250;
+}
+/* Emerald — ticketing */
+.menu-card[data-module="ticketingModule"],
+.menu-card[data-module="adminTicketsModule"] {
+    --module-accent: #34D399;
+    --module-accent-rgb: 52, 211, 153;
+}
+/* Orange — accommodation */
+.menu-card[data-module="accommodationModule"],
+.menu-card[data-module="adminAccommodationModule"] {
+    --module-accent: #FB923C;
+    --module-accent-rgb: 251, 146, 60;
+}
+/* Pink — marketplace */
+.menu-card[data-module="marketplaceModule"],
+.menu-card[data-module="adminMarketplaceModule"] {
+    --module-accent: #F472B6;
+    --module-accent-rgb: 244, 114, 182;
+}
+/* Cyan — media center */
+.menu-card[data-module="mediaCenterModule"],
+.menu-card[data-module="adminMediaModule"] {
+    --module-accent: #22D3EE;
+    --module-accent-rgb: 34, 211, 238;
+}
+/* Amber — heritage */
+.menu-card[data-module="heritageModule"],
+.menu-card[data-module="adminHeritageModule"] {
+    --module-accent: #EAB308;
+    --module-accent-rgb: 234, 179, 8;
+}
+/* Indigo — diaspora hub */
+.menu-card[data-module="diasporaModule"],
+.menu-card[data-module="adminDiasporaHubModule"] {
+    --module-accent: #818CF8;
+    --module-accent-rgb: 129, 140, 248;
+}
+/* Rose — directory */
+.menu-card[data-module="directoryModule"],
+.menu-card[data-module="adminDirectoryModule"] {
+    --module-accent: #FB7185;
+    --module-accent-rgb: 251, 113, 133;
+}
+/* Teal — feedback */
+.menu-card[data-module="feedbackModule"] {
+    --module-accent: #14B8A6;
+    --module-accent-rgb: 20, 184, 166;
+}
+/* Coral — donations */
+.menu-card[data-module="donationsModule"] {
+    --module-accent: #F87171;
+    --module-accent-rgb: 248, 113, 113;
+}
+/* Purple — admin schedule */
+.menu-card[data-module="adminEventScheduleModule"] {
+    --module-accent: #C084FC;
+    --module-accent-rgb: 192, 132, 252;
+}
+/* Yellow — admin complaints */
+.menu-card[data-module="adminComplaintsModule"] {
+    --module-accent: #FACC15;
+    --module-accent-rgb: 250, 204, 21;
+}
+/* Blue — admin reports */
+.menu-card[data-module="adminReportsModule"] {
+    --module-accent: #60A5FA;
+    --module-accent-rgb: 96, 165, 250;
+}
+
+/* ============================================================
+   RESTING STATE — bevel, border, background all tinted
+   ============================================================ */
+.menu-card {
+    border-color: rgba(var(--module-accent-rgb), 0.30);
+    background:
+        radial-gradient(ellipse 80% 60% at 50% 0%,
+            rgba(var(--module-accent-rgb), 0.09), transparent 70%),
+        linear-gradient(155deg,
+            rgba(38, 38, 52, 0.96) 0%,
+            rgba(24, 24, 34, 0.94) 45%,
+            rgba(14, 14, 22, 0.92) 100%);
+    box-shadow:
+        0 18px 36px rgba(0, 0, 0, 0.60),
+        0 10px 20px rgba(0, 0, 0, 0.45),
+        0 4px 8px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.58),
+        inset 0 2px 4px rgba(255, 255, 255, 0.16),
+        inset 0 3px 6px rgba(var(--module-accent-rgb), 0.16),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.78),
+        inset 0 -4px 12px rgba(0, 0, 0, 0.55),
+        inset 1px 0 2px rgba(255, 255, 255, 0.06),
+        inset -1px 0 2px rgba(0, 0, 0, 0.35);
+}
+
+/* ============================================================
+   HOVER — accent-tinted border, bloom, ambient halo
+   ============================================================ */
+.menu-card:hover {
+    border-color: rgba(var(--module-accent-rgb), 0.78);
+    background:
+        radial-gradient(ellipse 80% 60% at 50% 0%,
+            rgba(var(--module-accent-rgb), 0.16), transparent 70%),
+        linear-gradient(155deg,
+            rgba(46, 46, 62, 0.98) 0%,
+            rgba(28, 28, 40, 0.96) 45%,
+            rgba(18, 18, 26, 0.94) 100%);
+    box-shadow:
+        0 28px 56px rgba(0, 0, 0, 0.68),
+        0 16px 32px rgba(0, 0, 0, 0.55),
+        0 6px 12px rgba(0, 0, 0, 0.42),
+        0 40px 90px rgba(var(--module-accent-rgb), 0.25),
+        0 0 100px rgba(var(--module-accent-rgb), 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.88),
+        inset 0 2px 5px rgba(255, 255, 255, 0.24),
+        inset 0 3px 8px rgba(var(--module-accent-rgb), 0.28),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.68),
+        inset 0 -4px 12px rgba(0, 0, 0, 0.45),
+        inset 1px 0 2px rgba(255, 255, 255, 0.08),
+        inset -1px 0 2px rgba(0, 0, 0, 0.30);
+}
+
+/* ============================================================
+   PRESSED — bevel inversion, accent-tinted bottom highlight
+   ============================================================ */
+.menu-card:active {
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.55),
+        0 1px 2px rgba(0, 0, 0, 0.45),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.38),
+        inset 0 -2px 3px rgba(var(--module-accent-rgb), 0.22),
+        inset 0 1px 0 rgba(0, 0, 0, 0.88),
+        inset 0 4px 14px rgba(0, 0, 0, 0.72),
+        inset 0 2px 6px rgba(0, 0, 0, 0.65),
+        inset 1px 0 2px rgba(0, 0, 0, 0.40),
+        inset -1px 0 2px rgba(255, 255, 255, 0.06);
+}
+
+/* ============================================================
+   CURSOR SPOTLIGHT — accent-tinted
+   ============================================================ */
+.menu-card::before {
+    background: radial-gradient(
+        400px circle at var(--mx, 50%) var(--my, 50%),
+        rgba(var(--module-accent-rgb), 0.30) 0%,
+        rgba(var(--module-accent-rgb), 0.11) 30%,
+        transparent 65%
+    );
+}
+
+/* ============================================================
+   CHROMATIC REFRACTION RIDGE — accent ↔ white dispersion
+   ============================================================ */
+.menu-card::after {
+    background: linear-gradient(
+        90deg,
+        rgba(var(--module-accent-rgb), 0.00) 0%,
+        rgba(var(--module-accent-rgb), 0.45) 8%,
+        rgba(255, 255, 255, 0.85) 25%,
+        rgba(255, 255, 255, 1.00) 50%,
+        rgba(255, 255, 255, 0.85) 75%,
+        rgba(var(--module-accent-rgb), 0.45) 92%,
+        rgba(var(--module-accent-rgb), 0.00) 100%
+    );
+}
+
+/* ============================================================
+   ICON — accent color with accent-tinted glow + breathe
+   ============================================================ */
+.menu-card i {
+    color: var(--module-accent);
+    animation:
+        pfCardIconFloat 5.5s ease-in-out infinite,
+        pfIconBreatheThemed 4.2s ease-in-out infinite;
+}
+.menu-card:nth-child(4n+1) i { animation-delay: 0s, 0s; }
+.menu-card:nth-child(4n+2) i { animation-delay: -1.4s, -1.05s; }
+.menu-card:nth-child(4n+3) i { animation-delay: -2.8s, -2.10s; }
+.menu-card:nth-child(4n+4) i { animation-delay: -4.2s, -3.15s; }
+
+@keyframes pfIconBreatheThemed {
+    0%, 100% {
+        text-shadow:
+            0 0 22px rgba(var(--module-accent-rgb), 0.50),
+            0 0 8px rgba(var(--module-accent-rgb), 0.35),
+            0 2px 3px rgba(0, 0, 0, 0.70);
+    }
+    50% {
+        text-shadow:
+            0 0 34px rgba(var(--module-accent-rgb), 0.78),
+            0 0 12px rgba(var(--module-accent-rgb), 0.58),
+            0 2px 3px rgba(0, 0, 0, 0.70);
+    }
+}
+
+/* ============================================================
+   LIGHT MODE — darker accents for WCAG AA on white
+   ============================================================ */
+body.light-mode .menu-card[data-module="myRegistrationModule"] {
+    --module-accent: #8a6510; --module-accent-rgb: 138, 101, 16;
+}
+body.light-mode .menu-card[data-module="programsModule"],
+body.light-mode .menu-card[data-module="adminUsersModule"] {
+    --module-accent: #0284C7; --module-accent-rgb: 2, 132, 199;
+}
+body.light-mode .menu-card[data-module="eventScheduleModule"],
+body.light-mode .menu-card[data-module="adminProgramsModule"] {
+    --module-accent: #7C3AED; --module-accent-rgb: 124, 58, 237;
+}
+body.light-mode .menu-card[data-module="ticketingModule"],
+body.light-mode .menu-card[data-module="adminTicketsModule"] {
+    --module-accent: #059669; --module-accent-rgb: 5, 150, 105;
+}
+body.light-mode .menu-card[data-module="accommodationModule"],
+body.light-mode .menu-card[data-module="adminAccommodationModule"] {
+    --module-accent: #EA580C; --module-accent-rgb: 234, 88, 12;
+}
+body.light-mode .menu-card[data-module="marketplaceModule"],
+body.light-mode .menu-card[data-module="adminMarketplaceModule"] {
+    --module-accent: #DB2777; --module-accent-rgb: 219, 39, 119;
+}
+body.light-mode .menu-card[data-module="mediaCenterModule"],
+body.light-mode .menu-card[data-module="adminMediaModule"] {
+    --module-accent: #0891B2; --module-accent-rgb: 8, 145, 178;
+}
+body.light-mode .menu-card[data-module="heritageModule"],
+body.light-mode .menu-card[data-module="adminHeritageModule"] {
+    --module-accent: #A16207; --module-accent-rgb: 161, 98, 7;
+}
+body.light-mode .menu-card[data-module="diasporaModule"],
+body.light-mode .menu-card[data-module="adminDiasporaHubModule"] {
+    --module-accent: #4F46E5; --module-accent-rgb: 79, 70, 229;
+}
+body.light-mode .menu-card[data-module="directoryModule"],
+body.light-mode .menu-card[data-module="adminDirectoryModule"] {
+    --module-accent: #E11D48; --module-accent-rgb: 225, 29, 72;
+}
+body.light-mode .menu-card[data-module="feedbackModule"] {
+    --module-accent: #0D9488; --module-accent-rgb: 13, 148, 136;
+}
+body.light-mode .menu-card[data-module="donationsModule"] {
+    --module-accent: #DC2626; --module-accent-rgb: 220, 38, 38;
+}
+body.light-mode .menu-card[data-module="adminEventScheduleModule"] {
+    --module-accent: #9333EA; --module-accent-rgb: 147, 51, 234;
+}
+body.light-mode .menu-card[data-module="adminComplaintsModule"] {
+    --module-accent: #CA8A04; --module-accent-rgb: 202, 138, 4;
+}
+body.light-mode .menu-card[data-module="adminReportsModule"] {
+    --module-accent: #2563EB; --module-accent-rgb: 37, 99, 235;
+}
+
+/* Light-mode shadows — softer but module-tinted */
+body.light-mode .menu-card {
+    border-color: rgba(var(--module-accent-rgb), 0.35);
+    background:
+        radial-gradient(ellipse 80% 60% at 50% 0%,
+            rgba(var(--module-accent-rgb), 0.12), transparent 70%),
+        linear-gradient(155deg, #ffffff 0%, #faf8f2 45%, #f0ece2 100%);
+    box-shadow:
+        0 18px 36px rgba(0, 0, 0, 0.16),
+        0 10px 20px rgba(0, 0, 0, 0.10),
+        0 4px 8px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 1),
+        inset 0 2px 4px rgba(255, 255, 255, 0.55),
+        inset 0 3px 6px rgba(var(--module-accent-rgb), 0.18),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.22),
+        inset 0 -4px 12px rgba(0, 0, 0, 0.10),
+        inset 1px 0 2px rgba(255, 255, 255, 0.35),
+        inset -1px 0 2px rgba(0, 0, 0, 0.10);
+}
+body.light-mode .menu-card:hover {
+    border-color: var(--module-accent);
+    background:
+        radial-gradient(ellipse 80% 60% at 50% 0%,
+            rgba(var(--module-accent-rgb), 0.24), transparent 70%),
+        linear-gradient(155deg, #ffffff 0%, #fdfbf6 45%, #f5f1e8 100%);
+    box-shadow:
+        0 28px 56px rgba(0, 0, 0, 0.22),
+        0 16px 32px rgba(var(--module-accent-rgb), 0.16),
+        0 6px 12px rgba(0, 0, 0, 0.10),
+        0 40px 90px rgba(var(--module-accent-rgb), 0.30),
+        0 0 100px rgba(var(--module-accent-rgb), 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 1),
+        inset 0 2px 5px rgba(255, 255, 255, 0.70),
+        inset 0 3px 8px rgba(var(--module-accent-rgb), 0.28),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+        inset 0 -4px 12px rgba(0, 0, 0, 0.10);
+}
+body.light-mode .menu-card:active {
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.14),
+        0 1px 2px rgba(0, 0, 0, 0.10),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.85),
+        inset 0 -2px 3px rgba(var(--module-accent-rgb), 0.25),
+        inset 0 1px 0 rgba(0, 0, 0, 0.26),
+        inset 0 4px 14px rgba(0, 0, 0, 0.22),
+        inset 0 2px 6px rgba(0, 0, 0, 0.16);
+}
+body.light-mode .menu-card::before {
+    background: radial-gradient(
+        400px circle at var(--mx, 50%) var(--my, 50%),
+        rgba(var(--module-accent-rgb), 0.32) 0%,
+        rgba(var(--module-accent-rgb), 0.13) 30%,
+        transparent 65%
+    );
+}
+body.light-mode .menu-card::after {
+    background: linear-gradient(
+        90deg,
+        rgba(var(--module-accent-rgb), 0.00) 0%,
+        rgba(var(--module-accent-rgb), 0.38) 8%,
+        rgba(255, 255, 255, 1) 25%,
+        rgba(255, 255, 255, 1) 50%,
+        rgba(255, 255, 255, 1) 75%,
+        rgba(var(--module-accent-rgb), 0.38) 92%,
+        rgba(var(--module-accent-rgb), 0.00) 100%
+    );
+}
+body.light-mode .menu-card i {
+    color: var(--module-accent);
+    animation:
+        pfCardIconFloat 5.5s ease-in-out infinite,
+        pfIconBreatheThemedLight 4.2s ease-in-out infinite;
+}
+body.light-mode .menu-card:nth-child(4n+1) i { animation-delay: 0s, 0s; }
+body.light-mode .menu-card:nth-child(4n+2) i { animation-delay: -1.4s, -1.05s; }
+body.light-mode .menu-card:nth-child(4n+3) i { animation-delay: -2.8s, -2.10s; }
+body.light-mode .menu-card:nth-child(4n+4) i { animation-delay: -4.2s, -3.15s; }
+
+@keyframes pfIconBreatheThemedLight {
+    0%, 100% {
+        text-shadow:
+            0 1px 2px rgba(0, 0, 0, 0.14),
+            0 0 16px rgba(var(--module-accent-rgb), 0.38);
+    }
+    50% {
+        text-shadow:
+            0 1px 2px rgba(0, 0, 0, 0.14),
+            0 0 26px rgba(var(--module-accent-rgb), 0.62);
+    }
+}
+
+/* ============================================================
+   MOBILE — lighter shadow stack, no breathing (GPU budget)
+   ============================================================ */
+@media (max-width: 768px) {
+    .menu-card {
+        border-color: rgba(var(--module-accent-rgb), 0.38);
+        box-shadow:
+            0 10px 20px rgba(0, 0, 0, 0.55),
+            0 4px 8px rgba(0, 0, 0, 0.45),
+            inset 0 1px 0 rgba(255, 255, 255, 0.55),
+            inset 0 2px 4px rgba(var(--module-accent-rgb), 0.18),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.78),
+            inset 0 -3px 8px rgba(0, 0, 0, 0.50);
+    }
+    .menu-card:hover {
+        border-color: rgba(var(--module-accent-rgb), 0.78);
+        box-shadow:
+            0 16px 30px rgba(0, 0, 0, 0.62),
+            0 20px 40px rgba(var(--module-accent-rgb), 0.24),
+            inset 0 1px 0 rgba(255, 255, 255, 0.78),
+            inset 0 2px 4px rgba(var(--module-accent-rgb), 0.26),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.65),
+            inset 0 -3px 8px rgba(0, 0, 0, 0.42);
+    }
+    .menu-card:active {
+        box-shadow:
+            0 2px 4px rgba(0, 0, 0, 0.50),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.35),
+            inset 0 1px 0 rgba(0, 0, 0, 0.85),
+            inset 0 4px 12px rgba(0, 0, 0, 0.70);
+    }
+    .menu-card i,
+    body.light-mode .menu-card i {
+        animation: pfCardIconFloat 5.5s ease-in-out infinite;
+    }
+    body.light-mode .menu-card {
+        border-color: rgba(var(--module-accent-rgb), 0.40);
+        box-shadow:
+            0 10px 20px rgba(0, 0, 0, 0.14),
+            0 4px 8px rgba(0, 0, 0, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 1),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.20),
+            inset 0 -3px 8px rgba(0, 0, 0, 0.10);
+    }
+    body.light-mode .menu-card:active {
+        box-shadow:
+            0 2px 4px rgba(0, 0, 0, 0.10),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.85),
+            inset 0 1px 0 rgba(0, 0, 0, 0.24),
+            inset 0 4px 12px rgba(0, 0, 0, 0.22);
+    }
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+    .menu-card i {
+        animation: none !important;
+    }
+}
