@@ -4302,6 +4302,486 @@ console.log('[DiasporaHub] Professional networking platform loaded.');
     const timer = setInterval(() => {
         if (install() || ++tries > 60) clearInterval(timer);
     }, 200);
+    /* ============================================================
+   PANAFEST 2027 — MODERN CLICK SOUND ENGINE (v5)
+   ------------------------------------------------------------
+   Adds a satisfying, premium two-tone click (C6 + G6 shimmer)
+   whenever the user interacts with a module card, button, tab,
+   or interactive tile.
+
+   Features:
+     • Respects  `panafest_sound_enabled`  (via pfToggleSound)
+     • Shares the existing  pfSound  AudioContext when available
+     • Delegated listener survives every re-render
+     • Skips text inputs / textareas / selects (no sound on focus)
+     • Debounced (30 ms) to prevent machine-gun retriggering
+     • Capture-phase so the sound fires before navigation
+     • Exposed as  window.pfPlayClick()  for manual use
+     • Safe to remove — no existing function or state is touched
+   ============================================================ */
+(function pfClickSoundEngine() {
+    'use strict';
+
+    /* ---------- Preference gate ---------- */
+    const soundEnabled = () =>
+        localStorage.getItem('panafest_sound_enabled') !== 'false';
+
+    /* ---------- Engine ---------- */
+    const ClickEngine = {
+        _ctx: null,
+        _last: 0,
+
+        _ensureCtx() {
+            // Reuse pfSound's context when available (single AudioContext)
+            if (window.pfSound && window.pfSound._ctx) {
+                this._ctx = window.pfSound._ctx;
+            }
+            if (!this._ctx) {
+                try {
+                    const AC = window.AudioContext || window.webkitAudioContext;
+                    if (AC) this._ctx = new AC();
+                } catch (_) { /* silent fail */ }
+            }
+        },
+
+        _fireTwoTone() {
+            if (!this._ctx) return;
+            // Premium click:
+            //   • primary : C6 (1046.5 Hz), 75 ms, gain 0.060
+            //   • shimmer : G6 (1567.98 Hz), 85 ms, gain 0.038, +12 ms
+            this._tone(1046.50, 0,     0.075, 0.060, 'sine');
+            this._tone(1567.98, 0.012, 0.085, 0.038, 'sine');
+        },
+
+        _tone(freq, offset, dur, vol, type) {
+            if (!this._ctx) return;
+            const t = this._ctx.currentTime + offset;
+            const osc = this._ctx.createOscillator();
+            const gain = this._ctx.createGain();
+            osc.type = type || 'sine';
+            osc.frequency.setValueAtTime(freq, t);
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(vol, t + 0.006);
+            gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+            osc.connect(gain);
+            gain.connect(this._ctx.destination);
+            osc.start(t);
+            osc.stop(t + dur + 0.02);
+        },
+
+        playClick() {
+            if (!soundEnabled()) return;
+            const now = performance.now();
+            if (now - this._last < 30) return;   // debounce
+            this._last = now;
+
+            this._ensureCtx();
+            if (!this._ctx) return;
+
+            // If context suspended (autoplay policy), resume then fire
+            if (this._ctx.state !== 'running') {
+                this._ctx.resume()
+                    .then(() => this._fireTwoTone())
+                    .catch(() => {});
+            } else {
+                this._fireTwoTone();
+            }
+        }
+    };
+
+    // Public API (for manual triggering from anywhere)
+    window.pfPlayClick = () => ClickEngine.playClick();
+
+    /* ---------- Delegate click listener ---------- */
+    // Everything that should produce a satisfying click sound
+    const CLICKABLE = [
+        '.menu-card',
+        'button',
+        '.auth-btn',
+        '.action-btn',
+        '.back-to-menu-btn',
+        '.mp-tab',
+        '.drawer-menu-item',
+        '.hub-tab',
+        '.user-mgmt-tab',
+        '.media-tab',
+        '.diaspora-tab',
+        '.complaints-tab-btn',
+        '.student-complaints-tab-btn',
+        '.category-icon',
+        '.mp-product-card',
+        '.program-card',
+        '.accom-card',
+        '.vendor-card',
+        '.directory-card',
+        '.media-card',
+        '.ticket-type-card',
+        '.schedule-event-item',
+        '.hub-action-btn',
+        '.hub-stat-card',
+        '.hub-chapter-card',
+        '.delete-history-btn',
+        '.pf-notif-close',
+        '.menu-drawer-btn',
+        '.close-drawer-btn',
+        '.hub-forum-actions button',
+        '.mm-option',
+        'a[href]'
+    ].join(', ');
+
+    // Text-entry controls should NOT produce a click sound
+    const SKIP = [
+        'input[type="text"]',
+        'input[type="email"]',
+        'input[type="tel"]',
+        'input[type="number"]',
+        'input[type="password"]',
+        'input[type="date"]',
+        'input[type="datetime-local"]',
+        'input[type="search"]',
+        'input[type="url"]',
+        'input[type="file"]',
+        'textarea',
+        'select'
+    ].join(', ');
+
+    document.addEventListener('click', (e) => {
+        if (!(e.target instanceof Element)) return;
+        if (e.target.closest(SKIP)) return;
+
+        const hit = e.target.closest(CLICKABLE);
+        if (!hit) return;
+        if (hit.matches('[disabled], [aria-disabled="true"]')) return;
+
+        ClickEngine.playClick();
+    }, true); // capture phase — sound fires before any navigation
+
+    /* ---------- Pre-unlock AudioContext on first gesture ---------- */
+    function unlockOnce() {
+        ClickEngine._ensureCtx();
+        if (ClickEngine._ctx && ClickEngine._ctx.state === 'suspended') {
+            ClickEngine._ctx.resume().catch(() => {});
+        }
+        ['pointerdown', 'keydown', 'touchstart'].forEach(ev =>
+            document.removeEventListener(ev, unlockOnce, true));
+    }
+    ['pointerdown', 'keydown', 'touchstart'].forEach(ev =>
+        document.addEventListener(ev, unlockOnce, true));
+
+    console.log('[PANAFEST 2027] Modern click sound engine loaded — pfPlayClick() available.');
 })();
 })();
+})();
+})();
+
+/* ============================================================
+   PANAFEST 2027 — CUSTOMER INTERFACE FIXES v6 (standalone)
+   ------------------------------------------------------------
+   - Sound: provides its own click handler because the original
+     pfClickSoundEngine is orphaned by an early `return` inside
+     patchPanafestPronunciation and NEVER executes.
+   - Slideshow: injects 3 background banners beneath .menu-grid
+     on mobile; crossfades every 5 s; desktop untouched.
+   - Bright text + light-mode 3D are handled in styles.css; a
+     JS fallback ensures they apply even if CSS didn't append.
+   Non-invasive. Idempotent. Logs its own boot to console.
+   ============================================================ */
+(function PF_V6_CustomerFixes(){
+    'use strict';
+    console.log('%c[PF v6] BOOT — customer fixes loading', 'color:#FFD700;font-weight:bold');
+
+    /* -------------------------------------------------------
+       A. Click sound (standalone — does NOT rely on the
+          orphaned pfClickSoundEngine)
+       ------------------------------------------------------- */
+    let AC_CTX = null;
+    let LAST = 0;
+
+    function ac() {
+        if (window.pfSound && window.pfSound._ctx && window.pfSound._ctx.state !== 'closed') {
+            AC_CTX = window.pfSound._ctx;
+            return AC_CTX;
+        }
+        if (AC_CTX && AC_CTX.state !== 'closed') return AC_CTX;
+        try {
+            const Ctor = window.AudioContext || window.webkitAudioContext;
+            if (Ctor) AC_CTX = new Ctor();
+        } catch(e) { console.warn('[PF v6] AudioContext create failed:', e); }
+        return AC_CTX;
+    }
+
+    function tone(ctx, freq, offset, dur, vol, type) {
+        const t = ctx.currentTime + offset;
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = type || 'triangle';
+        o.frequency.setValueAtTime(freq, t);
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(vol, t + 0.005);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        o.connect(g); g.connect(ctx.destination);
+        o.start(t); o.stop(t + dur + 0.03);
+    }
+
+    function playClick() {
+        if (localStorage.getItem('panafest_sound_enabled') === 'false') return;
+        const now = performance.now();
+        if (now - LAST < 40) return;
+        LAST = now;
+        const ctx = ac();
+        if (!ctx) return;
+        const fire = () => {
+            try {
+                tone(ctx,  880.00, 0.000, 0.08, 0.30);   /* A5 punch — loud */
+                tone(ctx, 1320.00, 0.015, 0.10, 0.22);   /* E6 body  */
+            } catch(e) { console.warn('[PF v6] tone err:', e); }
+        };
+        if (ctx.state === 'running') fire();
+        else ctx.resume().then(fire).catch(() => fire());
+    }
+
+    /* Override ALL public hooks so anything else calling them gets
+       the loud version, not the orphaned quiet one */
+    window.pfPlayClick = playClick;
+    if (window.pfSound) {
+        const origPlay = window.pfSound.play?.bind(window.pfSound);
+        window.pfSound.play = function(kind) {
+            if (kind === 'badge' || kind === 'success' || kind === 'gold' || kind === 'error') {
+                return origPlay ? origPlay(kind) : undefined;
+            }
+            playClick();
+        };
+    }
+
+    /* Unlock AudioContext on first gesture */
+    const UNLOCK_EVTS = ['pointerdown','touchstart','mousedown','keydown'];
+    function unlock() {
+        const ctx = ac();
+        if (ctx && ctx.state === 'suspended') {
+            ctx.resume().then(() => console.log('[PF v6] AudioContext running'))
+                       .catch(e => console.warn('[PF v6] Unlock fail:', e));
+        }
+        UNLOCK_EVTS.forEach(ev => document.removeEventListener(ev, unlock, true));
+    }
+    UNLOCK_EVTS.forEach(ev => document.addEventListener(ev, unlock, true));
+
+    /* Capture-phase delegated click → sound */
+    const SKIP = 'input[type="text"],input[type="email"],input[type="tel"],input[type="number"],input[type="password"],input[type="date"],input[type="datetime-local"],input[type="search"],input[type="url"],input[type="file"],textarea,select';
+    const HIT  = ['button','.menu-card','.auth-btn','.action-btn','.back-to-menu-btn',
+                  '.mp-tab','.mp-product-card','.program-card','.accom-card','.vendor-card',
+                  '.directory-card','.media-card','.ticket-type-card','.schedule-event-item',
+                  '.hub-tab','.hub-action-btn','.hub-stat-card','.hub-chapter-card',
+                  '.user-mgmt-tab','.media-tab','.diaspora-tab','.complaints-tab-btn',
+                  '.student-complaints-tab-btn','.category-icon','.pf-notif-close',
+                  '.menu-drawer-btn','.close-drawer-btn','.mm-option','.delete-history-btn',
+                  '.drawer-menu-item','a[href]'].join(',');
+
+    document.addEventListener('click', function(e){
+        const t = e.target;
+        if (!(t instanceof Element)) return;
+        if (t.closest(SKIP)) return;
+        const hit = t.closest(HIT);
+        if (!hit) return;
+        if (hit.matches('[disabled],[aria-disabled="true"]')) return;
+        playClick();
+    }, true);
+
+    /* Console test */
+    window.pfSoundTest = function(){
+        console.log('[PF v6] pfSoundTest() — state:', ac()?.state);
+        const ctx = ac();
+        if (!ctx) { console.warn('[PF v6] No AudioContext'); return; }
+        if (ctx.state === 'suspended') {
+            ctx.resume().then(playClick).catch(e => console.warn('[PF v6] Test resume fail:', e));
+        } else {
+            playClick();
+        }
+    };
+
+    console.log('[PF v6] ✓ Click sound installed. Run pfSoundTest() to verify.');
+
+    /* -------------------------------------------------------
+       B. Mobile slideshow banners under module card
+       ------------------------------------------------------- */
+    const BANNERS = ['banner1.jpg', 'banner2.jpg', 'banner3.jpg'];
+    const MS = 5000;
+    let ROT = null;
+    let STACK = null;
+
+    function isMobile() { return window.matchMedia('(max-width: 768px)').matches; }
+
+    function buildSlides() {
+        const page = document.getElementById('menuPage');
+        if (!page) return;
+        if (!isMobile()) {
+            if (STACK && STACK.parentNode) STACK.parentNode.removeChild(STACK);
+            STACK = null;
+            if (ROT) { clearInterval(ROT); ROT = null; }
+            return;
+        }
+        if (STACK && STACK.parentNode === page) return; /* already built */
+
+        const old = page.querySelector('.pf-menu-slides-bg');
+        if (old) old.remove();
+
+        STACK = document.createElement('div');
+        STACK.className = 'pf-menu-slides-bg';
+        STACK.setAttribute('aria-hidden', 'true');
+
+        BANNERS.forEach((src, i) => {
+            const s = document.createElement('div');
+            s.className = 'pf-menu-slide' + (i === 0 ? ' pf-active' : '');
+            s.style.backgroundImage = "url('" + src + "')";
+            STACK.appendChild(s);
+        });
+
+        page.insertBefore(STACK, page.firstChild);
+
+        const slides = STACK.querySelectorAll('.pf-menu-slide');
+        let idx = 0;
+        if (ROT) clearInterval(ROT);
+        ROT = setInterval(() => {
+            if (!STACK || !STACK.parentNode || !isMobile()) return;
+            slides[idx].classList.remove('pf-active');
+            idx = (idx + 1) % slides.length;
+            slides[idx].classList.add('pf-active');
+        }, MS);
+
+        console.log('[PF v6] ✓ Mobile slideshow built — ' + slides.length + ' slides, rotating every ' + MS + 'ms');
+    }
+
+    function scheduleBuild() { setTimeout(buildSlides, 250); }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', scheduleBuild);
+    } else {
+        scheduleBuild();
+    }
+
+    let rT = null;
+    window.addEventListener('resize', () => {
+        clearTimeout(rT);
+        rT = setTimeout(buildSlides, 250);
+    });
+
+    const page = document.getElementById('menuPage');
+    if (page) {
+        new MutationObserver(() => {
+            clearTimeout(rT);
+            rT = setTimeout(buildSlides, 200);
+        }).observe(page, { attributes: true, attributeFilter: ['style'] });
+    }
+
+    /* -------------------------------------------------------
+       C. Bright-text + strong light-mode 3D fallback
+          (ensures styles apply even if styles.css append failed)
+       ------------------------------------------------------- */
+    if (!document.getElementById('pf-v6-styles')) {
+        const s = document.createElement('style');
+        s.id = 'pf-v6-styles';
+        s.textContent = `
+            /* Bright module text — dark mode */
+            body:not(.light-mode) .menu-card h3 {
+                color:#fff !important; -webkit-text-fill-color:#fff !important;
+                font-weight:800 !important;
+                text-shadow:0 2px 8px rgba(0,0,0,.95),0 1px 3px rgba(0,0,0,.85),0 0 22px rgba(0,0,0,.55) !important;
+            }
+            body:not(.light-mode) .menu-card p {
+                color:#ececf4 !important; -webkit-text-fill-color:#ececf4 !important;
+                font-weight:600 !important;
+                text-shadow:0 1px 4px rgba(0,0,0,.9),0 1px 2px rgba(0,0,0,.8) !important;
+            }
+            /* Bright module text — light mode */
+            body.light-mode .menu-card h3 {
+                color:#000 !important; -webkit-text-fill-color:#000 !important;
+                font-weight:800 !important;
+                text-shadow:0 1px 0 rgba(255,255,255,.95),0 1px 2px rgba(0,0,0,.1) !important;
+            }
+            body.light-mode .menu-card p {
+                color:#1a1a2e !important; -webkit-text-fill-color:#1a1a2e !important;
+                font-weight:700 !important;
+                text-shadow:0 1px 0 rgba(255,255,255,.85),0 1px 2px rgba(0,0,0,.08) !important;
+            }
+            /* Strong light-mode 3D */
+            body.light-mode .menu-card {
+                box-shadow:
+                    0 26px 52px rgba(0,0,0,.3),
+                    0 16px 32px rgba(0,0,0,.22),
+                    0 8px 16px rgba(0,0,0,.15),
+                    0 3px 6px rgba(0,0,0,.1),
+                    inset 0 2px 0 rgba(255,255,255,1),
+                    inset 0 3px 6px rgba(255,255,255,.85),
+                    inset 0 4px 10px rgba(var(--module-accent-rgb,255,215,0),.22),
+                    inset 0 -2px 0 rgba(0,0,0,.35),
+                    inset 0 -5px 16px rgba(0,0,0,.18),
+                    inset 2px 0 3px rgba(255,255,255,.7),
+                    inset -2px 0 3px rgba(0,0,0,.14) !important;
+            }
+            body.light-mode .menu-card:hover {
+                box-shadow:
+                    0 38px 76px rgba(0,0,0,.36),
+                    0 22px 44px rgba(0,0,0,.26),
+                    0 10px 20px rgba(0,0,0,.18),
+                    0 50px 100px rgba(var(--module-accent-rgb,255,215,0),.45),
+                    0 0 130px rgba(var(--module-accent-rgb,255,215,0),.22),
+                    inset 0 2px 0 rgba(255,255,255,1),
+                    inset 0 3px 8px rgba(255,255,255,.95),
+                    inset 0 5px 14px rgba(var(--module-accent-rgb,255,215,0),.36),
+                    inset 0 -2px 0 rgba(0,0,0,.3),
+                    inset 0 -5px 16px rgba(0,0,0,.16) !important;
+            }
+            body.light-mode .menu-card:active {
+                box-shadow:
+                    0 3px 6px rgba(0,0,0,.16),
+                    0 1px 3px rgba(0,0,0,.12),
+                    inset 0 -2px 0 rgba(255,255,255,.98),
+                    inset 0 -3px 6px rgba(var(--module-accent-rgb,255,215,0),.35),
+                    inset 0 2px 0 rgba(0,0,0,.35),
+                    inset 0 6px 18px rgba(0,0,0,.32),
+                    inset 0 3px 10px rgba(0,0,0,.22) !important;
+            }
+            /* Mobile slideshow CSS */
+            @media (max-width:768px) {
+                #menuPage.menu-page { isolation:isolate; }
+                #menuPage.menu-page .pf-menu-slides-bg {
+                    position:absolute; inset:0; overflow:hidden;
+                    border-radius:inherit; z-index:0; pointer-events:none;
+                }
+                #menuPage.menu-page .pf-menu-slide {
+                    position:absolute; inset:0;
+                    background-size:cover; background-position:center;
+                    opacity:0; transition:opacity 1.8s ease-in-out;
+                }
+                #menuPage.menu-page .pf-menu-slide.pf-active { opacity:1; }
+                #menuPage.menu-page .pf-menu-slides-bg::after {
+                    content:''; position:absolute; inset:0;
+                    background:linear-gradient(180deg,rgba(10,10,15,.55) 0%,rgba(10,10,15,.82) 55%,rgba(10,10,15,.92) 100%);
+                    z-index:2; pointer-events:none;
+                }
+                body.light-mode #menuPage.menu-page .pf-menu-slides-bg::after {
+                    background:linear-gradient(180deg,rgba(250,245,232,.55) 0%,rgba(245,240,228,.76) 55%,rgba(240,235,224,.86) 100%);
+                }
+                #menuPage.menu-page::before { z-index:3 !important; }
+                #menuPage.menu-page > .menu-grid { z-index:4 !important; position:relative; }
+            }
+        `;
+        document.head.appendChild(s);
+        console.log('[PF v6] ✓ Bright text + strong 3D + slideshow CSS injected.');
+    }
+
+    /* -------------------------------------------------------
+       D. Diagnostic
+       ------------------------------------------------------- */
+    window.pfDiagnose = function(){
+        console.table({
+            mobileViewport:        window.matchMedia('(max-width:768px)').matches,
+            menuPageExists:        !!document.getElementById('menuPage'),
+            slideshowStackExists:  !!document.querySelector('.pf-menu-slides-bg'),
+            slidesCount:           document.querySelectorAll('.pf-menu-slide').length,
+            activeSlide:           document.querySelectorAll('.pf-menu-slide.pf-active').length,
+            audioCtxState:         (window.pfSound && window.pfSound._ctx && window.pfSound._ctx.state) || 'none',
+            soundPref:             localStorage.getItem('panafest_sound_enabled') || 'unset (default=enabled)'
+        });
+    };
+
+    console.log('%c[PF v6] ✓ READY — run pfDiagnose() or pfSoundTest() in console', 'color:#4ade80;font-weight:bold');
 })();
