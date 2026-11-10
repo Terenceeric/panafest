@@ -4084,4 +4084,224 @@ console.log('[DiasporaHub] Professional networking platform loaded.');
     setTimeout(() => { try { BadgeSystem.init(); } catch(e) {} }, 900);
 
     console.log('[PANAFEST 2027] Sound engine, voice announcer & iOS badge system v3 loaded.');
+
+    /* ============================================================
+   PANAFEST 2027 — MODULE CARD 3D TILT ENHANCEMENT (v2)
+   Self-contained cosmetic layer. Does not touch any existing
+   functions, variables, auth, DB, or app logic. Safe to remove.
+   - Cursor-tracked tilt + spotlight coordinates
+   - Pointer press-state (spring snap)
+   - Haptic feedback on tap (Android; ignored on iOS)
+   - Auto-rebinds when renderMenuGrid() rebuilds cards
+   ============================================================ */
+(function pfModuleCardTilt() {
+    'use strict';
+
+    // Respect user preferences — silently disable on reduced-motion
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    // Skip 3D tilt on touch-only devices (hover: none)
+    // Mobile still gets the CSS press lift + haptic below.
+    const isTouchOnly = window.matchMedia('(hover: none)').matches;
+    const supportsHaptic = typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
+
+    const bound = new WeakSet();
+    let raf = null;
+
+    function bindCard(card) {
+        if (bound.has(card)) return;
+        bound.add(card);
+
+        // -------- 3D tilt (desktop pointer) --------
+        if (!isTouchOnly) {
+            let pendingX = 50, pendingY = 50, active = false;
+
+            const apply = () => {
+                raf = null;
+                if (!active) return;
+                // Map cursor position (0–100%) to tilt degrees (±8)
+                const rx = -((pendingY - 50) / 50) * 8;
+                const ry =  ((pendingX - 50) / 50) * 8;
+                card.style.setProperty('--rx', rx.toFixed(2) + 'deg');
+                card.style.setProperty('--ry', ry.toFixed(2) + 'deg');
+                card.style.setProperty('--mx', pendingX + '%');
+                card.style.setProperty('--my', pendingY + '%');
+            };
+
+            card.addEventListener('pointerenter', () => {
+                active = true;
+                card.style.setProperty('--ty', '-10px');
+                card.style.setProperty('--sc', '1.03');
+            });
+
+            card.addEventListener('pointermove', (e) => {
+                if (!active) return;
+                const r = card.getBoundingClientRect();
+                pendingX = ((e.clientX - r.left) / r.width) * 100;
+                pendingY = ((e.clientY - r.top)  / r.height) * 100;
+                if (raf == null) raf = requestAnimationFrame(apply);
+            });
+
+            card.addEventListener('pointerleave', () => {
+                active = false;
+                card.style.setProperty('--rx', '0deg');
+                card.style.setProperty('--ry', '0deg');
+                card.style.setProperty('--ty', '0px');
+                card.style.setProperty('--sc', '1');
+                card.style.setProperty('--mx', '50%');
+                card.style.setProperty('--my', '50%');
+            });
+        }
+
+        // -------- Press state (both touch & pointer) --------
+        card.addEventListener('pointerdown', () => {
+            card.style.setProperty('--sc', '0.97');
+            card.style.setProperty('--ty', '0px');
+            if (supportsHaptic) {
+                try { navigator.vibrate(10); } catch (_) { /* ignore */ }
+            }
+        });
+
+        card.addEventListener('pointerup', () => {
+            // Only "spring back" to hover pose if pointer is still over the card
+            if (card.matches(':hover') && !isTouchOnly) {
+                card.style.setProperty('--sc', '1.03');
+                card.style.setProperty('--ty', '-10px');
+            } else {
+                card.style.setProperty('--sc', '1');
+                card.style.setProperty('--ty', '0px');
+            }
+        });
+
+        card.addEventListener('pointercancel', () => {
+            card.style.setProperty('--sc', '1');
+            card.style.setProperty('--ty', '0px');
+        });
+    }
+
+    function scan() {
+        document.querySelectorAll('.menu-card').forEach(bindCard);
+    }
+
+    // -------- Attach after renderMenuGrid() creates cards --------
+    function attachObserver() {
+        const grid = document.getElementById('menuGrid');
+        if (!grid) {
+            setTimeout(attachObserver, 300);
+            return;
+        }
+        // Re-bind whenever the grid's children are replaced
+        // (happens on login, logout, and role switch)
+        new MutationObserver(scan).observe(grid, { childList: true });
+        scan();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', attachObserver);
+    } else {
+        attachObserver();
+    }
+
+    // Safety net: user can hot-swap between light/dark while hovering
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) scan();
+    });
+
+    console.log('[PANAFEST 2027] Module card 3D tilt layer v2 loaded.');
+    /* ============================================================
+   PANAFEST 2027 — VOICE PRONUNCIATION FIX
+   ------------------------------------------------------------
+   Problem : TTS engines spell "PANAFEST" as P-A-N-A-F-E-S-T
+             because it is an unknown word in ALL CAPS.
+
+   Fix     : Transparently wrap pfVoice.speak / pfVoice.speakNow
+             with a phonetic pre-processor. The UI text is NOT
+             changed; only the text handed to the SpeechSynthesis
+             engine is respelled as "Panna-fest".
+
+   Safety  : No existing function, variable, or logic is modified.
+             Since window.pfVoice === VoiceAnnouncer (same object),
+             wrapping the public methods also covers the internal
+             tryWelcomeVoice / tryLoginVoice calls.
+
+   Diagnostics: pfTestPanafest() — speaks a demo sentence.
+   ============================================================ */
+(function patchPanafestPronunciation() {
+    'use strict';
+
+    /* ---------- Phonetic replacement table ---------- */
+    /* Order matters: longer / more specific patterns first.     */
+    const PHONETIC_MAP = [
+        /* The brand name — plural/possessive forms first */
+        [/\bPANAFEST'?S\b/gi, "Panna-fest's"],
+        [/\bPANAFEST\b/gi,    'Panna-fest'],
+
+        /* Other acronyms that commonly get spelled out */
+        [/\bGHS\b/g,    'Ghana cedis'],
+        [/\bUSD\b/g,    'U S dollars'],
+        [/\bUCC\b/g,    'U C C'],
+        [/\bMTN\b/g,    'M T N'],
+        [/\bVIP\b/g,    'V I P'],
+        [/\bQR\b/g,     'Q R'],
+        [/\bSMS\b/g,    'S M S'],
+        [/\bAPI\b/g,    'A P I'],
+        [/\bURL\b/g,    'U R L'],
+        [/\bPDF\b/g,    'P D F'],
+        [/\bID\b/g,     'I D'],
+    ];
+
+    function phoneticizeForSpeech(text) {
+        if (text == null) return text;
+        let out = String(text);
+        for (const [pattern, replacement] of PHONETIC_MAP) {
+            out = out.replace(pattern, replacement);
+        }
+        return out;
+    }
+
+    /* ---------- Install the wrapper ---------- */
+    function install() {
+        if (!window.pfVoice) return false;
+        if (window.pfVoice.__pfPronunciationPatched) return true;
+        window.pfVoice.__pfPronunciationPatched = true;
+
+        ['speak', 'speakNow'].forEach(method => {
+            const original = window.pfVoice[method];
+            if (typeof original !== 'function') return;
+            if (original.__pfPhoneticWrapped) return;
+
+            const wrapped = function (text, opts) {
+                /* Replace brand/acronyms → phonetic spelling,
+                   then hand off to the untouched original. */
+                return original.call(this, phoneticizeForSpeech(text), opts);
+            };
+            wrapped.__pfPhoneticWrapped = true;
+            window.pfVoice[method] = wrapped;
+        });
+
+        /* ---------- Diagnostic tool ---------- */
+        window.pfTestPanafest = function () {
+            window.pfVoice.speakNow(
+                'Welcome to PANAFEST 2027. ' +
+                'PANAFEST is the Pan African Historical Theatre Festival.',
+                { rate: 0.9 }
+            );
+        };
+
+        console.log(
+            '[pfVoice] Pronunciation patch active — ' +
+            '"PANAFEST" will be spoken as "Panna-fest". ' +
+            'Run pfTestPanafest() in the console to verify.'
+        );
+        return true;
+    }
+
+    /* pfVoice may not be attached yet during initial load — poll */
+    if (install()) return;
+    let tries = 0;
+    const timer = setInterval(() => {
+        if (install() || ++tries > 60) clearInterval(timer);
+    }, 200);
+})();
+})();
 })();
